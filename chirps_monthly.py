@@ -7,6 +7,7 @@ from datetime import datetime
 import plotly.express as px
 import os
 import io
+import zipfile
 
 # --- Konfigurasi Aplikasi Streamlit ---
 st.set_page_config(
@@ -158,32 +159,43 @@ if col_buttons[0].button('Proses Data & Tampilkan Peta 🗺️'):
 # --- Tampilkan Peta Jika Data Sudah Tersedia ---
 if st.session_state.chirps_data:
     dates = sorted(st.session_state.chirps_data.keys())
-    selected_date_index = st.slider("Pilih Bulan untuk Peta:", 0, len(dates) - 1, 0, format=dates[0])
+    selected_date_index = st.slider("Pilih Bulan untuk Peta:", 0, len(dates) - 1, 0, format_func=lambda i: dates[i])
     selected_date = dates[selected_date_index]
     
     df_to_display = st.session_state.chirps_data[selected_date]
     create_map(df_to_display, selected_date, point_size)
 
-if col_buttons[1].button('Download Semua Data Excel ⬇️'):
+if col_buttons[1].button('Download Semua Data (ZIP) ⬇️'):
     if not st.session_state.chirps_data:
         st.error("Harap proses data terlebih dahulu sebelum mengunduh.")
     else:
-        with st.spinner('Menggabungkan dan memproses data untuk diunduh...'):
-            combined_df = pd.concat(list(st.session_state.chirps_data.values()), ignore_index=True)
-            excel_buffer = io.BytesIO()
-            combined_df.to_excel(excel_buffer, index=False, engine='xlsxwriter')
-            excel_buffer.seek(0)
+        with st.spinner('Membuat file arsip ZIP...'):
+            # Membuat buffer di memori untuk file ZIP
+            zip_buffer = io.BytesIO()
+            
+            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                for date_key, df_data in st.session_state.chirps_data.items():
+                    # Membuat buffer di memori untuk setiap file Excel
+                    excel_buffer = io.BytesIO()
+                    df_data.to_excel(excel_buffer, index=False, engine='xlsxwriter')
+                    excel_buffer.seek(0)
+                    
+                    # Menambahkan file Excel ke dalam arsip ZIP
+                    zip_file.writestr(f"CHIRPS_Data_{date_key}.xlsx", excel_buffer.getvalue())
+            
+            zip_buffer.seek(0)
             
             start_date_str = sorted(st.session_state.chirps_data.keys())[0]
             end_date_str = sorted(st.session_state.chirps_data.keys())[-1]
+            zip_file_name = f"CHIRPS_Data_{start_date_str}_to_{end_date_str}.zip"
 
             st.download_button(
-                label="Klik untuk Mengunduh File Excel",
-                data=excel_buffer,
-                file_name=f"CHIRPS_Data_{start_date_str}_to_{end_date_str}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                label="Klik untuk Mengunduh File ZIP",
+                data=zip_buffer,
+                file_name=zip_file_name,
+                mime="application/zip"
             )
-            st.success("✅ File Excel siap diunduh!")
+            st.success("✅ File ZIP siap diunduh!")
 
 st.markdown("---")
 st.info("Catatan: Data CHIRPS diunduh dari [CHG UCSB](https://data.chc.ucsb.edu/products/CHIRPS/).")
