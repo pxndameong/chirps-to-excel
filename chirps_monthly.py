@@ -19,6 +19,8 @@ st.set_page_config(
 # --- Inisialisasi Session State ---
 if 'chirps_data' not in st.session_state:
     st.session_state.chirps_data = {}
+if 'data_processed' not in st.session_state:
+    st.session_state.data_processed = False
 
 # --- Judul Aplikasi ---
 st.title("🌧️ CHIRPS Monthly Data")
@@ -125,15 +127,15 @@ def create_map(df, date_str, point_size):
 
 # --- Tombol Aksi ---
 st.markdown("---")
-
-if st.button('Proses & Unduh Data (ZIP) ⬇️'):
+if st.button('Proses Data'):
     start_date_obj = datetime(start_year, int(start_month), 1)
     end_date_obj = datetime(end_year, int(end_month), 1)
 
     if start_date_obj > end_date_obj:
         st.error("Tanggal awal tidak boleh lebih besar dari tanggal akhir.")
     else:
-        st.session_state.chirps_data = {}  # Reset data
+        st.session_state.chirps_data = {}
+        st.session_state.data_processed = False
         current_date = start_date_obj
         
         with st.spinner(f'Mengunduh dan memproses data dari {start_date_obj.strftime("%Y-%m")} s.d. {end_date_obj.strftime("%Y-%m")}...'):
@@ -151,9 +153,24 @@ if st.button('Proses & Unduh Data (ZIP) ⬇️'):
                     current_date = datetime(current_date.year, current_date.month + 1, 1)
 
         if st.session_state.chirps_data:
-            st.success("✅ Semua data berhasil diproses! File ZIP Anda sedang dibuat.")
-            
-            # --- Bagian untuk membuat ZIP file ---
+            st.session_state.data_processed = True
+            st.success("✅ Semua data berhasil diproses!")
+        else:
+            st.warning("Tidak ada data yang tersedia untuk diproses. Harap periksa parameter yang Anda masukkan.")
+
+# --- Tampilkan Peta & Tombol Unduh (muncul setelah proses data) ---
+if st.session_state.data_processed:
+    st.markdown("---")
+    st.subheader("Aksi")
+    col_actions = st.columns(2)
+    
+    # Tombol Tampilkan Peta
+    if col_actions[0].button('Tampilkan Peta 🗺️'):
+        st.session_state['show_map'] = True
+    
+    # Tombol Unduh ZIP
+    if col_actions[1].button('Download Semua Data (ZIP) ⬇️'):
+        with st.spinner('Membuat file arsip ZIP...'):
             zip_buffer = io.BytesIO()
             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                 for date_key, df_data in st.session_state.chirps_data.items():
@@ -167,32 +184,30 @@ if st.button('Proses & Unduh Data (ZIP) ⬇️'):
             start_date_str = sorted(st.session_state.chirps_data.keys())[0]
             end_date_str = sorted(st.session_state.chirps_data.keys())[-1]
             zip_file_name = f"CHIRPS_Data_{start_date_str}_to_{end_date_str}.zip"
-
+            
             st.download_button(
                 label="Klik untuk Mengunduh File ZIP",
                 data=zip_buffer,
                 file_name=zip_file_name,
                 mime="application/zip"
             )
-            
-        else:
-            st.warning("Tidak ada data yang tersedia untuk diproses. Harap periksa parameter yang Anda masukkan.")
+            st.success("✅ File ZIP siap diunduh!")
 
-# --- Tampilkan Peta Jika Data Sudah Tersedia ---
-if st.session_state.chirps_data:
-    st.markdown("---")
-    st.subheader("Visualisasi Data")
-    dates = sorted(st.session_state.chirps_data.keys())
-    
-    if len(dates) > 1:
-        selected_date_index = st.slider("Pilih Bulan untuk Peta:", 0, len(dates) - 1, 0, format_func=lambda i: dates[i])
-        selected_date = dates[selected_date_index]
-    else:
-        selected_date = dates[0]
-        st.write(f"Menampilkan data untuk bulan: **{selected_date}**")
+    # Menampilkan Peta jika tombol 'Tampilkan Peta' ditekan
+    if 'show_map' in st.session_state and st.session_state['show_map']:
+        st.markdown("---")
+        st.subheader("Visualisasi Data")
+        dates = sorted(st.session_state.chirps_data.keys())
         
-    df_to_display = st.session_state.chirps_data[selected_date]
-    create_map(df_to_display, selected_date, point_size)
+        if len(dates) > 1:
+            selected_date_index = st.slider("Pilih Bulan untuk Peta:", 0, len(dates) - 1, 0, format_func=lambda i: dates[i])
+            selected_date = dates[selected_date_index]
+        else:
+            selected_date = dates[0]
+            st.write(f"Menampilkan data untuk bulan: **{selected_date}**")
+            
+        df_to_display = st.session_state.chirps_data[selected_date]
+        create_map(df_to_display, selected_date, point_size)
 
 
 st.markdown("---")
