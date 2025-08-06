@@ -39,13 +39,8 @@ selected_month_num = st.sidebar.selectbox(
     index=datetime.now().month - 1
 )[0]
 
-# Opsi untuk ukuran titik
-point_size_mode = st.sidebar.radio(
-    "Ukuran Titik Peta:",
-    ('Konsisten', 'Dinamis (berdasarkan curah hujan)'),
-    horizontal=True
-)
-
+# Slider untuk mengatur ukuran titik
+point_size = st.sidebar.slider("Atur Ukuran Titik:", min_value=1, max_value=20, value=8, step=1)
 st.sidebar.markdown("---")
 st.sidebar.header("Atur Batas Geografis")
 
@@ -96,6 +91,9 @@ def get_chirps_data(year, month, lat_min, lat_max, lon_min, lon_max):
                 (df["Longitude"] >= lon_min) & (df["Longitude"] <= lon_max)
             ].copy()
 
+            # --- Perubahan di sini: Menambahkan kolom Date_Range ---
+            df_filtered['Date_Range'] = f"{year}-{month}"
+
             return df_filtered
 
     except Exception as e:
@@ -103,21 +101,13 @@ def get_chirps_data(year, month, lat_min, lat_max, lon_min, lon_max):
         return pd.DataFrame()
 
 # --- Fungsi untuk Membuat Peta ---
-def create_map(df, year, month, point_mode):
-    if point_mode == 'Dinamis (berdasarkan curah hujan)':
-        size_param = "Value"
-        size_title = "Ukuran Titik (mm/bulan)"
-        st.info("Peta ini menampilkan ukuran titik secara dinamis, di mana titik yang lebih besar menunjukkan curah hujan yang lebih tinggi.")
-    else: # Konsisten
-        size_param = None
-        size_title = None
-        st.info("Peta ini menampilkan ukuran titik yang konsisten untuk semua lokasi.")
+def create_map(df, year, month, point_size):
+    st.info("Peta ini menampilkan ukuran titik yang konsisten. Anda dapat mengatur ukurannya menggunakan slider di sidebar.")
 
     fig = px.scatter_mapbox(df,
                             lat="Latitude",
                             lon="Longitude",
                             color="Value",
-                            size=size_param, # Mengatur parameter size
                             color_continuous_scale=px.colors.sequential.Viridis,
                             zoom=5,
                             mapbox_style="open-street-map",
@@ -130,12 +120,10 @@ def create_map(df, year, month, point_mode):
         coloraxis_colorbar=dict(title="Curah Hujan (mm)"),
     )
 
-    # Mengatur ukuran titik yang konsisten
-    if point_mode == 'Konsisten':
-        fig.update_traces(marker=dict(size=8)) # Atur ukuran default jika mode konsisten
+    # Mengatur ukuran titik yang konsisten berdasarkan slider
+    fig.update_traces(marker=dict(size=point_size))
 
     st.plotly_chart(fig, use_container_width=True)
-
 
 # --- Tombol Aksi ---
 st.markdown("---")
@@ -146,7 +134,7 @@ if col_buttons[0].button('Proses Data & Tampilkan Peta 🗺️'):
         df_chirps = get_chirps_data(selected_year, selected_month_num, lat_min, lat_max, lon_min, lon_max)
     
     if not df_chirps.empty:
-        create_map(df_chirps, selected_year, selected_month_num, point_size_mode)
+        create_map(df_chirps, selected_year, selected_month_num, point_size)
     else:
         st.warning("Tidak ada data yang tersedia untuk ditampilkan. Harap periksa parameter yang Anda masukkan.")
 
