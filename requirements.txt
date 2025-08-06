@@ -1,0 +1,7 @@
+streamlit
+requests
+rasterio
+numpy
+pandas
+plotly
+openpyxl
