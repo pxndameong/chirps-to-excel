@@ -23,6 +23,7 @@ if 'chirps_data' not in st.session_state:
 # --- Judul Aplikasi ---
 st.title("🌧️ CHIRPS Data Downloader & Viewer")
 st.markdown("Aplikasi ini memungkinkan Anda mengunduh, memproses, dan memvisualisasikan data curah hujan bulanan CHIRPS v3.0.")
+st.markdown("Dibuat Tsaqib")
 
 # --- Pengaturan Tahun & Bulan Range ---
 TAHUN_MULAI = 1981
