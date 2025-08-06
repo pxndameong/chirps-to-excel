@@ -125,9 +125,8 @@ def create_map(df, date_str, point_size):
 
 # --- Tombol Aksi ---
 st.markdown("---")
-col_buttons = st.columns(2)
 
-if col_buttons[0].button('Proses Data & Tampilkan Peta 🗺️'):
+if st.button('Proses & Unduh Data (ZIP) ⬇️'):
     start_date_obj = datetime(start_year, int(start_month), 1)
     end_date_obj = datetime(end_year, int(end_month), 1)
 
@@ -152,35 +151,15 @@ if col_buttons[0].button('Proses Data & Tampilkan Peta 🗺️'):
                     current_date = datetime(current_date.year, current_date.month + 1, 1)
 
         if st.session_state.chirps_data:
-            st.success("✅ Semua data berhasil diproses!")
-        else:
-            st.warning("Tidak ada data yang tersedia untuk ditampilkan. Harap periksa parameter yang Anda masukkan.")
-
-# --- Tampilkan Peta Jika Data Sudah Tersedia ---
-if st.session_state.chirps_data:
-    dates = sorted(st.session_state.chirps_data.keys())
-    selected_date_index = st.slider("Pilih Bulan untuk Peta:", 0, len(dates) - 1, 0, format_func=lambda i: dates[i])
-    selected_date = dates[selected_date_index]
-    
-    df_to_display = st.session_state.chirps_data[selected_date]
-    create_map(df_to_display, selected_date, point_size)
-
-if col_buttons[1].button('Download Semua Data (ZIP) ⬇️'):
-    if not st.session_state.chirps_data:
-        st.error("Harap proses data terlebih dahulu sebelum mengunduh.")
-    else:
-        with st.spinner('Membuat file arsip ZIP...'):
-            # Membuat buffer di memori untuk file ZIP
-            zip_buffer = io.BytesIO()
+            st.success("✅ Semua data berhasil diproses! File ZIP Anda sedang dibuat.")
             
+            # --- Bagian untuk membuat ZIP file ---
+            zip_buffer = io.BytesIO()
             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                 for date_key, df_data in st.session_state.chirps_data.items():
-                    # Membuat buffer di memori untuk setiap file Excel
                     excel_buffer = io.BytesIO()
                     df_data.to_excel(excel_buffer, index=False, engine='xlsxwriter')
                     excel_buffer.seek(0)
-                    
-                    # Menambahkan file Excel ke dalam arsip ZIP
                     zip_file.writestr(f"CHIRPS_Data_{date_key}.xlsx", excel_buffer.getvalue())
             
             zip_buffer.seek(0)
@@ -195,7 +174,26 @@ if col_buttons[1].button('Download Semua Data (ZIP) ⬇️'):
                 file_name=zip_file_name,
                 mime="application/zip"
             )
-            st.success("✅ File ZIP siap diunduh!")
+            
+        else:
+            st.warning("Tidak ada data yang tersedia untuk diproses. Harap periksa parameter yang Anda masukkan.")
+
+# --- Tampilkan Peta Jika Data Sudah Tersedia ---
+if st.session_state.chirps_data:
+    st.markdown("---")
+    st.subheader("Visualisasi Data")
+    dates = sorted(st.session_state.chirps_data.keys())
+    
+    if len(dates) > 1:
+        selected_date_index = st.slider("Pilih Bulan untuk Peta:", 0, len(dates) - 1, 0, format_func=lambda i: dates[i])
+        selected_date = dates[selected_date_index]
+    else:
+        selected_date = dates[0]
+        st.write(f"Menampilkan data untuk bulan: **{selected_date}**")
+        
+    df_to_display = st.session_state.chirps_data[selected_date]
+    create_map(df_to_display, selected_date, point_size)
+
 
 st.markdown("---")
 st.info("Catatan: Data CHIRPS diunduh dari [CHG UCSB](https://data.chc.ucsb.edu/products/CHIRPS/).")
