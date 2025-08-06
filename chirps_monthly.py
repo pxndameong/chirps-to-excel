@@ -204,8 +204,9 @@ if st.session_state.data_processed:
         
         if dates:
             if len(dates) > 1:
-                selected_date_index = st.slider("Pilih Bulan untuk Peta:", 0, len(dates) - 1, 0, format_func=lambda i: dates[i])
+                selected_date_index = st.slider("Pilih Indeks Bulan untuk Peta:", 0, len(dates) - 1, 0)
                 selected_date = dates[selected_date_index]
+                st.write(f"Menampilkan data untuk bulan: **{selected_date}**")
             else:
                 selected_date = dates[0]
                 st.write(f"Menampilkan data untuk bulan: **{selected_date}**")
