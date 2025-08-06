@@ -21,6 +21,8 @@ if 'chirps_data' not in st.session_state:
     st.session_state.chirps_data = {}
 if 'data_processed' not in st.session_state:
     st.session_state.data_processed = False
+if 'show_map' not in st.session_state:
+    st.session_state.show_map = False
 
 # --- Judul Aplikasi ---
 st.title("🌧️ CHIRPS Monthly Data")
@@ -136,6 +138,7 @@ if st.button('Proses Data'):
     else:
         st.session_state.chirps_data = {}
         st.session_state.data_processed = False
+        st.session_state.show_map = False # Reset status peta
         current_date = start_date_obj
         
         with st.spinner(f'Mengunduh dan memproses data dari {start_date_obj.strftime("%Y-%m")} s.d. {end_date_obj.strftime("%Y-%m")}...'):
@@ -166,7 +169,7 @@ if st.session_state.data_processed:
     
     # Tombol Tampilkan Peta
     if col_actions[0].button('Tampilkan Peta 🗺️'):
-        st.session_state['show_map'] = True
+        st.session_state.show_map = True
     
     # Tombol Unduh ZIP
     if col_actions[1].button('Download Semua Data (ZIP) ⬇️'):
@@ -194,21 +197,23 @@ if st.session_state.data_processed:
             st.success("✅ File ZIP siap diunduh!")
 
     # Menampilkan Peta jika tombol 'Tampilkan Peta' ditekan
-    if 'show_map' in st.session_state and st.session_state['show_map']:
+    if st.session_state.show_map:
         st.markdown("---")
         st.subheader("Visualisasi Data")
         dates = sorted(st.session_state.chirps_data.keys())
         
-        if len(dates) > 1:
-            selected_date_index = st.slider("Pilih Bulan untuk Peta:", 0, len(dates) - 1, 0, format_func=lambda i: dates[i])
-            selected_date = dates[selected_date_index]
+        if dates:
+            if len(dates) > 1:
+                selected_date_index = st.slider("Pilih Bulan untuk Peta:", 0, len(dates) - 1, 0, format_func=lambda i: dates[i])
+                selected_date = dates[selected_date_index]
+            else:
+                selected_date = dates[0]
+                st.write(f"Menampilkan data untuk bulan: **{selected_date}**")
+                
+            df_to_display = st.session_state.chirps_data[selected_date]
+            create_map(df_to_display, selected_date, point_size)
         else:
-            selected_date = dates[0]
-            st.write(f"Menampilkan data untuk bulan: **{selected_date}**")
-            
-        df_to_display = st.session_state.chirps_data[selected_date]
-        create_map(df_to_display, selected_date, point_size)
-
+            st.warning("Tidak ada data untuk divisualisasikan. Silakan proses data terlebih dahulu.")
 
 st.markdown("---")
 st.info("Catatan: Data CHIRPS diunduh dari [CHG UCSB](https://data.chc.ucsb.edu/products/CHIRPS/).")
