@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import plotly.express as px
 import os
 import io
+import zipfile
 
 # --- Konfigurasi Aplikasi Streamlit ---
 st.set_page_config(
@@ -18,6 +19,10 @@ st.set_page_config(
 # --- Inisialisasi Session State ---
 if 'chirps_data' not in st.session_state:
     st.session_state.chirps_data = {}
+if 'data_processed' not in st.session_state:
+    st.session_state.data_processed = False
+if 'show_map' not in st.session_state:
+    st.session_state.show_map = False
 
 # --- Judul Aplikasi ---
 st.title("🌧️ CHIRPS Daily Data")
@@ -120,13 +125,13 @@ def create_map(df, date_str, point_size):
 
 # --- Tombol Aksi ---
 st.markdown("---")
-col_buttons = st.columns(2)
-
-if col_buttons[0].button('Proses Data & Tampilkan Peta 🗺️'):
+if st.button('Proses Data'):
     if start_date > end_date:
         st.error("Tanggal awal tidak boleh lebih besar dari tanggal akhir.")
     else:
-        st.session_state.chirps_data = {}  # Reset data
+        st.session_state.chirps_data = {}
+        st.session_state.data_processed = False
+        st.session_state.show_map = False # Reset status peta
         current_date = start_date
         
         with st.spinner(f'Mengunduh dan memproses data dari {start_date} s.d. {end_date}...'):
@@ -138,39 +143,65 @@ if col_buttons[0].button('Proses Data & Tampilkan Peta 🗺️'):
                 current_date += timedelta(days=1)
 
         if st.session_state.chirps_data:
+            st.session_state.data_processed = True
             st.success("✅ Semua data berhasil diproses!")
         else:
-            st.warning("Tidak ada data yang tersedia untuk ditampilkan. Harap periksa parameter yang Anda masukkan.")
+            st.warning("Tidak ada data yang tersedia untuk diproses. Harap periksa parameter yang Anda masukkan.")
 
-# --- Tampilkan Peta Jika Data Sudah Tersedia ---
-if st.session_state.chirps_data:
-    dates = sorted(st.session_state.chirps_data.keys())
-    selected_date_index = st.slider("Pilih Tanggal untuk Peta:", 0, len(dates) - 1, 0, format=dates[0])
-    selected_date = dates[selected_date_index]
+# --- Tampilkan Peta & Tombol Unduh (muncul setelah proses data) ---
+if st.session_state.data_processed:
+    st.markdown("---")
+    st.subheader("Aksi")
+    col_actions = st.columns(2)
     
-    df_to_display = st.session_state.chirps_data[selected_date]
-    create_map(df_to_display, selected_date, point_size)
-
-if col_buttons[1].button('Download Semua Data Excel ⬇️'):
-    if not st.session_state.chirps_data:
-        st.error("Harap proses data terlebih dahulu sebelum mengunduh.")
-    else:
-        with st.spinner('Menggabungkan dan memproses data untuk diunduh...'):
-            combined_df = pd.concat(list(st.session_state.chirps_data.values()), ignore_index=True)
-            excel_buffer = io.BytesIO()
-            combined_df.to_excel(excel_buffer, index=False, engine='xlsxwriter')
-            excel_buffer.seek(0)
+    # Tombol Tampilkan Peta
+    if col_actions[0].button('Tampilkan Peta 🗺️'):
+        st.session_state.show_map = True
+    
+    # Tombol Unduh ZIP
+    if col_actions[1].button('Download Semua Data (ZIP) ⬇️'):
+        with st.spinner('Membuat file arsip ZIP...'):
+            zip_buffer = io.BytesIO()
+            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                for date_key, df_data in st.session_state.chirps_data.items():
+                    excel_buffer = io.BytesIO()
+                    df_data.to_excel(excel_buffer, index=False, engine='xlsxwriter')
+                    excel_buffer.seek(0)
+                    zip_file.writestr(f"CHIRPS_Data_{date_key}.xlsx", excel_buffer.getvalue())
+            
+            zip_buffer.seek(0)
             
             start_date_str = sorted(st.session_state.chirps_data.keys())[0]
             end_date_str = sorted(st.session_state.chirps_data.keys())[-1]
-
+            zip_file_name = f"CHIRPS_Daily_Data_{start_date_str}_to_{end_date_str}.zip"
+            
             st.download_button(
-                label="Klik untuk Mengunduh File Excel",
-                data=excel_buffer,
-                file_name=f"CHIRPS_Daily_Data_{start_date_str}_to_{end_date_str}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                label="Klik untuk Mengunduh File ZIP",
+                data=zip_buffer,
+                file_name=zip_file_name,
+                mime="application/zip"
             )
-            st.success("✅ File Excel siap diunduh!")
+            st.success("✅ File ZIP siap diunduh!")
+
+    # Menampilkan Peta jika tombol 'Tampilkan Peta' ditekan
+    if st.session_state.show_map:
+        st.markdown("---")
+        st.subheader("Visualisasi Data")
+        dates = sorted(st.session_state.chirps_data.keys())
+        
+        if dates:
+            if len(dates) > 1:
+                selected_date_index = st.slider("Pilih Tanggal untuk Peta:", 0, len(dates) - 1, 0)
+                selected_date = dates[selected_date_index]
+                st.write(f"Menampilkan data untuk tanggal: **{selected_date}**")
+            else:
+                selected_date = dates[0]
+                st.write(f"Menampilkan data untuk tanggal: **{selected_date}**")
+                
+            df_to_display = st.session_state.chirps_data[selected_date]
+            create_map(df_to_display, selected_date, point_size)
+        else:
+            st.warning("Tidak ada data untuk divisualisasikan. Silakan proses data terlebih dahulu.")
 
 st.markdown("---")
 st.info("Catatan: Data CHIRPS diunduh dari [CHG UCSB](https://data.chc.ucsb.edu/products/CHIRPS/).")
