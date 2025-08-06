@@ -16,7 +16,6 @@ st.set_page_config(
 )
 
 # --- Inisialisasi Session State ---
-# Digunakan untuk menyimpan data yang sudah diproses agar tidak diunduh ulang
 if 'chirps_data' not in st.session_state:
     st.session_state.chirps_data = {}
 
@@ -42,7 +41,6 @@ with col_end:
     end_year = st.selectbox("Tahun Akhir:", options=list(range(TAHUN_MULAI, TAHUN_AKHIR + 1)), index=len(range(TAHUN_MULAI, TAHUN_AKHIR + 1)) - 1, key='end_year')
     end_month = st.selectbox("Bulan Akhir:", options=BULAN_OPTIONS, format_func=lambda x: x['label'], key='end_month')['value']
 
-# Slider untuk mengatur ukuran titik
 point_size = st.sidebar.slider("Atur Ukuran Titik:", min_value=1, max_value=20, value=8, step=1)
 
 st.sidebar.markdown("---")
@@ -94,7 +92,7 @@ def get_chirps_data(year, month, lat_min, lat_max, lon_min, lon_max):
             ].copy()
 
             df_filtered['Date_Range'] = f"{year}-{month}"
-            st.success(f"✅ Data untuk {month}/{year} berhasil diproses.")
+            
             return df_filtered
 
     except Exception as e:
@@ -153,7 +151,7 @@ if col_buttons[0].button('Proses Data & Tampilkan Peta 🗺️'):
                     current_date = datetime(current_date.year, current_date.month + 1, 1)
 
         if st.session_state.chirps_data:
-            st.success("Semua data berhasil diproses!")
+            st.success("✅ Semua data berhasil diproses!")
         else:
             st.warning("Tidak ada data yang tersedia untuk ditampilkan. Harap periksa parameter yang Anda masukkan.")
 
@@ -185,7 +183,7 @@ if col_buttons[1].button('Download Semua Data Excel ⬇️'):
                 file_name=f"CHIRPS_Data_{start_date_str}_to_{end_date_str}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
-            st.success("File Excel siap diunduh!")
+            st.success("✅ File Excel siap diunduh!")
 
 st.markdown("---")
 st.info("Catatan: Data CHIRPS diunduh dari [CHG UCSB](https://data.chc.ucsb.edu/products/CHIRPS/).")
