@@ -15,6 +15,11 @@ st.set_page_config(
     initial_sidebar_state="auto"
 )
 
+# --- Inisialisasi Session State ---
+# Digunakan untuk menyimpan data yang sudah diproses agar tidak diunduh ulang
+if 'chirps_data' not in st.session_state:
+    st.session_state.chirps_data = {}
+
 # --- Judul Aplikasi ---
 st.title("🌧️ CHIRPS Data Downloader & Viewer")
 st.markdown("Aplikasi ini memungkinkan Anda mengunduh, memproses, dan memvisualisasikan data curah hujan bulanan CHIRPS v3.0.")
@@ -53,9 +58,7 @@ with col2:
 # --- Fungsi untuk Mengunduh dan Memproses Data ---
 @st.cache_data(ttl=3600)
 def get_chirps_data(year, month, lat_min, lat_max, lon_min, lon_max):
-    """
-    Mengunduh data CHIRPS, memprosesnya, dan mengembalikan DataFrame.
-    """
+    """Mengunduh data CHIRPS, memprosesnya, dan mengembalikan DataFrame."""
     file_name = f"chirps-v3.0.{year}.{month}"
     url = f"https://data.chc.ucsb.edu/products/CHIRPS/v3.0/monthly/global/tifs/{file_name}.tif"
 
@@ -90,15 +93,15 @@ def get_chirps_data(year, month, lat_min, lat_max, lon_min, lon_max):
             ].copy()
 
             df_filtered['Date_Range'] = f"{year}-{month}"
-
+            st.success(f"✅ Data untuk {month}/{year} berhasil diproses.")
             return df_filtered
 
     except Exception as e:
-        st.error(f"❌ Terjadi kesalahan: {e}")
+        st.error(f"❌ Gagal memproses data {month}/{year}: {e}")
         return pd.DataFrame()
 
 # --- Fungsi untuk Membuat Peta ---
-def create_map(df, start_date, end_date, point_size):
+def create_map(df, date_str, point_size):
     st.info("Peta ini menampilkan ukuran titik yang konsisten. Anda dapat mengatur ukurannya menggunakan slider di sidebar.")
 
     fig = px.scatter_mapbox(df,
@@ -108,8 +111,8 @@ def create_map(df, start_date, end_date, point_size):
                             color_continuous_scale=px.colors.sequential.Viridis,
                             zoom=5,
                             mapbox_style="open-street-map",
-                            title=f"Curah Hujan (mm/bulan) | {start_date} s.d. {end_date}",
-                            hover_data={"Latitude": ':.2f', "Longitude": ':.2f', "Value": ':.2f', "Date_Range": True})
+                            title=f"Curah Hujan (mm/bulan) - {date_str}",
+                            hover_data={"Latitude": ':.2f', "Longitude": ':.2f', "Value": ':.2f'})
     
     fig.update_layout(
         margin={"r":0,"t":40,"l":0,"b":0},
@@ -125,77 +128,63 @@ st.markdown("---")
 col_buttons = st.columns(2)
 
 if col_buttons[0].button('Proses Data & Tampilkan Peta 🗺️'):
-    # Validasi rentang tanggal
     start_date_obj = datetime(start_year, int(start_month), 1)
     end_date_obj = datetime(end_year, int(end_month), 1)
 
     if start_date_obj > end_date_obj:
         st.error("Tanggal awal tidak boleh lebih besar dari tanggal akhir.")
     else:
-        all_dfs = []
+        st.session_state.chirps_data = {}  # Reset data
         current_date = start_date_obj
         
-        with st.spinner(f'Mengunduh dan memproses data dari {start_date_obj.strftime("%Y-%m")} sampai {end_date_obj.strftime("%Y-%m")}...'):
+        with st.spinner(f'Mengunduh dan memproses data dari {start_date_obj.strftime("%Y-%m")} s.d. {end_date_obj.strftime("%Y-%m")}...'):
             while current_date <= end_date_obj:
                 year = current_date.year
                 month = f"{current_date.month:02d}"
-                st.info(f"Memproses data untuk {month}/{year}...")
                 
                 df_chirps = get_chirps_data(year, month, lat_min, lat_max, lon_min, lon_max)
                 if not df_chirps.empty:
-                    all_dfs.append(df_chirps)
+                    st.session_state.chirps_data[f"{year}-{month}"] = df_chirps
                 
-                # Maju ke bulan berikutnya
                 if current_date.month == 12:
                     current_date = datetime(current_date.year + 1, 1, 1)
                 else:
                     current_date = datetime(current_date.year, current_date.month + 1, 1)
 
-        if all_dfs:
-            combined_df = pd.concat(all_dfs, ignore_index=True)
-            create_map(combined_df, start_date_obj.strftime("%Y-%m"), end_date_obj.strftime("%Y-%m"), point_size)
+        if st.session_state.chirps_data:
+            st.success("Semua data berhasil diproses!")
         else:
             st.warning("Tidak ada data yang tersedia untuk ditampilkan. Harap periksa parameter yang Anda masukkan.")
 
-if col_buttons[1].button('Download Data Excel ⬇️'):
-    # Validasi rentang tanggal
-    start_date_obj = datetime(start_year, int(start_month), 1)
-    end_date_obj = datetime(end_year, int(end_month), 1)
+# --- Tampilkan Peta Jika Data Sudah Tersedia ---
+if st.session_state.chirps_data:
+    dates = sorted(st.session_state.chirps_data.keys())
+    selected_date_index = st.slider("Pilih Bulan untuk Peta:", 0, len(dates) - 1, 0, format=dates[0])
+    selected_date = dates[selected_date_index]
+    
+    df_to_display = st.session_state.chirps_data[selected_date]
+    create_map(df_to_display, selected_date, point_size)
 
-    if start_date_obj > end_date_obj:
-        st.error("Tanggal awal tidak boleh lebih besar dari tanggal akhir.")
+if col_buttons[1].button('Download Semua Data Excel ⬇️'):
+    if not st.session_state.chirps_data:
+        st.error("Harap proses data terlebih dahulu sebelum mengunduh.")
     else:
-        all_dfs_download = []
-        current_date_download = start_date_obj
-
-        with st.spinner(f'Mengunduh dan memproses data untuk diunduh dari {start_date_obj.strftime("%Y-%m")} s.d. {end_date_obj.strftime("%Y-%m")}...'):
-            while current_date_download <= end_date_obj:
-                year = current_date_download.year
-                month = f"{current_date_download.month:02d}"
-                df_chirps_download = get_chirps_data(year, month, lat_min, lat_max, lon_min, lon_max)
-                if not df_chirps_download.empty:
-                    all_dfs_download.append(df_chirps_download)
-                
-                if current_date_download.month == 12:
-                    current_date_download = datetime(current_date_download.year + 1, 1, 1)
-                else:
-                    current_date_download = datetime(current_date_download.year, current_date_download.month + 1, 1)
-
-        if all_dfs_download:
-            combined_df_download = pd.concat(all_dfs_download, ignore_index=True)
+        with st.spinner('Menggabungkan dan memproses data untuk diunduh...'):
+            combined_df = pd.concat(list(st.session_state.chirps_data.values()), ignore_index=True)
             excel_buffer = io.BytesIO()
-            combined_df_download.to_excel(excel_buffer, index=False, engine='xlsxwriter')
+            combined_df.to_excel(excel_buffer, index=False, engine='xlsxwriter')
             excel_buffer.seek(0)
             
+            start_date_str = sorted(st.session_state.chirps_data.keys())[0]
+            end_date_str = sorted(st.session_state.chirps_data.keys())[-1]
+
             st.download_button(
                 label="Klik untuk Mengunduh File Excel",
                 data=excel_buffer,
-                file_name=f"CHIRPS_Data_{start_date_obj.strftime('%Y-%m')}_to_{end_date_obj.strftime('%Y-%m')}.xlsx",
+                file_name=f"CHIRPS_Data_{start_date_str}_to_{end_date_str}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
             st.success("File Excel siap diunduh!")
-        else:
-            st.warning("Tidak ada data untuk diunduh. Harap proses data terlebih dahulu atau periksa parameter Anda.")
 
 st.markdown("---")
 st.info("Catatan: Data CHIRPS diunduh dari [CHG UCSB](https://data.chc.ucsb.edu/products/CHIRPS/).")
