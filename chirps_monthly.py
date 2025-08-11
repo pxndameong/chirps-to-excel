@@ -91,8 +91,8 @@ def get_chirps_data(year, month, lat_min, lat_max, lon_min, lon_max):
             })
 
             df.dropna(inplace=True)
-            df_filtered = df[
-                (df["Latitude"] >= lat_min) & (df["Latitude"] <= lat_max) &
+            df_filtered = df[ 
+                (df["Latitude"] >= lat_min) & (df["Latitude"] <= lat_max) & 
                 (df["Longitude"] >= lon_min) & (df["Longitude"] <= lon_max)
             ].copy()
 
@@ -123,7 +123,8 @@ def create_map(df, date_str, point_size):
         coloraxis_colorbar=dict(title="Curah Hujan (mm)"),
     )
 
-    fig.update_traces(marker=dict(size=point_size))
+    # Mengubah simbol marker menjadi square (blok penuh)
+    fig.update_traces(marker=dict(symbol="square", size=point_size))
 
     st.plotly_chart(fig, use_container_width=True)
 
@@ -138,7 +139,7 @@ if st.button('Proses Data'):
     else:
         st.session_state.chirps_data = {}
         st.session_state.data_processed = False
-        st.session_state.show_map = False # Reset status peta
+        st.session_state.show_map = False  # Reset status peta
         current_date = start_date_obj
         
         with st.spinner(f'Mengunduh dan memproses data dari {start_date_obj.strftime("%Y-%m")} s.d. {end_date_obj.strftime("%Y-%m")}...'):
