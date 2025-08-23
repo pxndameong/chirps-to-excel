@@ -235,4 +235,4 @@ st.markdown("""
 """)
 
 st.markdown("---")
-st.info("Note: CHIRPS data downloaded from [CHG UCSB](https://data.chc.ucsb.edu/products/CHIRPS/).")
+st.info("Note: CHIRPS data downloaded from [CHG UCSB](https://data.chc.ucsb.edu/products/CHIRPS/v3.0/).")
