@@ -25,4 +25,5 @@ st.markdown("""
 """)
 
 st.markdown("---")
-st.info("Note: CHIRPS data downloaded from [CHG UCSB](https://data.chc.ucsb.edu/products/CHIRPS/).")
+st.info("Reference: CHIRPS documentation [CHG UCSB](https://www.chc.ucsb.edu/data/chirps3).")
+st.info("Reference: CHIRPS data downloaded from [Data CHG UCSB](https://data.chc.ucsb.edu/products/CHIRPS/).")
