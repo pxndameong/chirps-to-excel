@@ -27,7 +27,17 @@ if 'show_map' not in st.session_state:
 # --- Application Title ---
 st.title("🌧️ CHIRPS Daily Data")
 st.markdown("This application allows you to download, process, and visualize CHIRPS v3.0 daily rainfall data. The data is downloaded in Excel format for easy processing.")
-st.markdown("Created by Tsaqib")
+
+st.markdown("""
+This page is specifically for downloading daily rainfall data. Follow these steps:
+1.  **Select the Date Range**: In the sidebar, use the date pickers to select a **Start Date** and an **End Date**.
+2.  **Set Geographic Boundaries**: Enter the minimum and maximum latitude and longitude for your desired region.
+3.  **Adjust Point Size**: Use the slider to set the size of the points on the map.
+4.  **Process Data**: Click the **'Process Data'** button. The application will fetch and process data for each day in your selected range.
+5.  **Display & Download**:
+    * Click **'Show Map'** to view the daily rainfall map. A slider will appear if you have selected more than one day.
+    * Click **'Download All Data (ZIP)'** to get a ZIP archive containing an Excel file for each day of data you requested.
+""")
 
 # --- User Input in Sidebar ---
 st.sidebar.header("Select Daily Date Range")

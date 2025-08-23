@@ -27,8 +27,17 @@ if 'show_map' not in st.session_state:
 # --- Application Title ---
 st.title("🌧️ CHIRPS Monthly Data")
 st.markdown("This application allows you to download, process, and visualize CHIRPS v3.0 monthly rainfall data at a resolution of 0.05 degrees. The data is downloaded in Excel format for easy processing.")
-st.markdown("Created by Tsaqib")
 
+st.markdown("""
+This page is designed for downloading monthly rainfall data. Follow these steps:
+1.  **Select the Date Range**: In the left sidebar, use the dropdown menus to select your desired **Start Year**, **Start Month**, **End Year**, and **End Month**.
+2.  **Set Geographic Boundaries**: Enter the minimum and maximum latitude and longitude values to define your area of interest.
+3.  **Adjust Point Size**: Use the slider to control the size of the data points on the map visualization.
+4.  **Process Data**: Click the **'Process Data'** button. The application will begin downloading and processing data for each month within your specified range. Please wait until the process is complete.
+5.  **Display & Download**:
+    * Once the data is processed, click the **'Show Map'** button to view an interactive map. If you've selected more than one month, a slider will appear, allowing you to switch between the maps for each month.
+    * Click the **'Download All Data (ZIP)'** button to download all the processed data in a single ZIP file, containing a separate Excel file (.xlsx) for each month.
+""")
 # --- Year & Month Range Setup ---
 START_YEAR = 1981
 END_YEAR = datetime.now().year
