@@ -7,8 +7,7 @@ st.set_page_config(
 
 st.title("CHIRPS Data Downloader Application")
 st.markdown("""
-This application allows you to download and visualize **CHIRPS v3.0** rainfall data on both a daily and monthly scale.
-
+This application allows you to download and visualize CHIRPS v3.0 rainfall data on both a daily and monthly scale. You can easily get the data as an Excel file, which makes it simple to use for your own analysis and reports.
 Select your desired option from the navigation menu in the sidebar.
 - **Monthly CHIRPS**: Download monthly rainfall data from year to year.
 - **Daily CHIRPS**: Download daily rainfall data for a specific date range.
