@@ -45,11 +45,11 @@ st.sidebar.header("Set Geographic Boundaries")
 
 col1, col2 = st.sidebar.columns(2)
 with col1:
-    lat_min = st.number_input("Min Latitude:", value=-9.0, step=0.1, format="%.1f")
-    lon_min = st.number_input("Min Longitude:", value=104.0, step=0.1, format="%.1f")
+    lat_min = st.number_input("Min Latitude:", value=0, step=0.1, format="%.1f")
+    lat_max = st.number_input("Max Latitude:", value=0, step=0.1, format="%.1f")
 with col2:
-    lat_max = st.number_input("Max Latitude:", value=-5.5, step=0.1, format="%.1f")
-    lon_max = st.number_input("Max Longitude:", value=115.0, step=0.1, format="%.1f")
+    lon_min = st.number_input("Min Longitude:", value=0, step=0.1, format="%.1f")
+    lon_max = st.number_input("Max Longitude:", value=0, step=0.1, format="%.1f")
 
 # --- Function to Download and Process Data ---
 @st.cache_data(ttl=3600)
