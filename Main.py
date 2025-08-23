@@ -5,7 +5,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("Welcome to the CHIRPS Data Downloader Application")
+st.title("CHIRPS Data Downloader Application")
 st.markdown("""
 This application allows you to download and visualize **CHIRPS v3.0** rainfall data on both a daily and monthly scale.
 
