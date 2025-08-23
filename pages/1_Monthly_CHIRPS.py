@@ -227,7 +227,7 @@ if st.session_state.data_processed:
 
 # --- Credits Section ---
 st.markdown("---")
-st.subheader("Created by:")
+st.markdown("Created by:")
 st.markdown("""
 - **Ammar Abiyyu Tsaqib, S.Si.** *Department of Physics, Faculty of Mathematics and Natural Sciences, Yogyakarta States University* ammarabiyyu.2020@student.uny.ac.id
 - **Yudhie Andriyana, M.Sc., Ph.D.** *Department of Statistics, Faculty of Mathematics and Natural Sciences, Universitas Padjadjaran* y.andriyana@unpad.ac.id
