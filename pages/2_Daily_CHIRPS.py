@@ -44,9 +44,9 @@ st.sidebar.header("Select Daily Date Range")
 col_start, col_end = st.sidebar.columns(2)
 
 with col_start:
-    start_date = st.date_input("Start Date:", value=datetime(2000, 1, 1), key='start_date')
+    start_date = st.date_input("Start Date:", value=datetime(2001, 1, 1), key='start_date')
 with col_end:
-    end_date = st.date_input("End Date:", value=datetime(2000, 1, 1), key='end_date')
+    end_date = st.date_input("End Date:", value=datetime(2001, 1, 1), key='end_date')
 
 point_size = st.sidebar.slider("Set Point Size:", min_value=1, max_value=20, value=8, step=1)
 
