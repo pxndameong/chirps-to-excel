@@ -13,11 +13,11 @@ Select your desired option from the navigation menu in the sidebar.
 - **Daily CHIRPS**: Download daily rainfall data for a specific date range.
 """)
 
-st.info("Please select a page from the sidebar to begin.")
+st.markdown("Please select a page from the sidebar to begin.")
 
 # --- Credits Section ---
 st.markdown("---")
-st.subheader("Created by:")
+st.markdown("Created by:")
 st.markdown("""
 - **Ammar Abiyyu Tsaqib, S.Si.** *Department of Physics, Faculty of Mathematics and Natural Sciences, Yogyakarta States University* ammarabiyyu.2020@student.uny.ac.id
 - **Yudhie Andriyana, M.Sc., Ph.D.** *Department of Statistics, Faculty of Mathematics and Natural Sciences, Universitas Padjadjaran* y.andriyana@unpad.ac.id
@@ -26,4 +26,4 @@ st.markdown("""
 
 st.markdown("---")
 st.info("Reference: CHIRPS documentation [CHG UCSB](https://www.chc.ucsb.edu/data/chirps3).")
-st.info("Reference: CHIRPS data downloaded from [Data CHG UCSB](https://data.chc.ucsb.edu/products/CHIRPS/).")
+st.info("Database: CHIRPS data downloaded from [Data CHG UCSB](https://data.chc.ucsb.edu/products/CHIRPS/).")
