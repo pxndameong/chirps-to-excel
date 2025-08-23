@@ -1,0 +1,26 @@
+import streamlit as st
+
+st.set_page_config(
+    page_title="CHIRPS Data Downloader",
+    layout="wide"
+)
+
+st.title("Welcome to the CHIRPS Data Downloader Application")
+st.markdown("""
+This application allows you to download and visualize **CHIRPS v3.0** rainfall data on both a daily and monthly scale.
+
+Select your desired option from the navigation menu in the sidebar.
+- **Monthly CHIRPS**: Download monthly rainfall data from year to year.
+- **Daily CHIRPS**: Download daily rainfall data for a specific date range.
+""")
+
+st.info("Please select a page from the sidebar to begin.")
+
+# --- Credits Section ---
+st.markdown("---")
+st.subheader("Created by:")
+st.markdown("""
+- **Ammar Abiyyu Tsaqib, S.Si.** *Department of Physics, Faculty of Mathematics and Natural Sciences, Yogyakarta States University* ammarabiyyu.2020@student.uny.ac.id
+- **Yudhie Andriyana, M.Sc., Ph.D.** *Department of Statistics, Faculty of Mathematics and Natural Sciences, Universitas Padjadjaran* y.andriyana@unpad.ac.id
+- **Dr. Annisa Nur Falah, M.Mat.** *Research Center for Computing, Research Organization for Electronics and Informatics, National Research and Innovation Agency (BRIN)* annisa.nur.falah.1@brin.go.id
+""")
