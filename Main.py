@@ -13,7 +13,7 @@ Select your desired option from the navigation menu in the sidebar.
 - **Daily CHIRPS**: Download daily rainfall data for a specific date range.
 """)
 
-st.markdown("Please select a page from the sidebar to begin.")
+st.info("Please select a page from the LEFT SIDEBAR to open navigation.")
 
 # --- Credits Section ---
 st.markdown("---")
