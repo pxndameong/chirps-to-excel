@@ -16,9 +16,6 @@ Select your desired option from the navigation menu in the sidebar.
 
 st.info("Please select a page from the sidebar to begin.")
 
-st.markdown("---")
-st.info("Note: CHIRPS data downloaded from [CHG UCSB](https://data.chc.ucsb.edu/products/CHIRPS/).")
-
 # --- Credits Section ---
 st.markdown("---")
 st.subheader("Created by:")
@@ -27,3 +24,6 @@ st.markdown("""
 - **Yudhie Andriyana, M.Sc., Ph.D.** *Department of Statistics, Faculty of Mathematics and Natural Sciences, Universitas Padjadjaran* y.andriyana@unpad.ac.id
 - **Dr. Annisa Nur Falah, M.Mat.** *Research Center for Computing, Research Organization for Electronics and Informatics, National Research and Innovation Agency (BRIN)* annisa.nur.falah.1@brin.go.id
 """)
+
+st.markdown("---")
+st.info("Note: CHIRPS data downloaded from [CHG UCSB](https://data.chc.ucsb.edu/products/CHIRPS/).")
